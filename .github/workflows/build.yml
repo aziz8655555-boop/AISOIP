@@ -1,4 +1,3 @@
-
 name: Build AISOIP APK
 
 on:
@@ -78,8 +77,8 @@ jobs:
                   applicationId 'com.personal.aisoip'
                   minSdk 23
                   targetSdk 35
-                  versionCode 4
-                  versionName '1.3'
+                  versionCode 5
+                  versionName '1.4'
               }
 
               compileOptions {
@@ -149,7 +148,6 @@ jobs:
           import android.app.Activity;
           import android.os.Bundle;
           import android.os.Build;
-          import android.os.Message;
           import android.net.Uri;
           import android.graphics.Color;
           import android.graphics.drawable.GradientDrawable;
@@ -214,6 +212,7 @@ jobs:
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
+
                   super.onCreate(savedInstanceState);
 
                   getWindow().setFlags(
@@ -228,6 +227,7 @@ jobs:
               }
 
               private int dp(int value) {
+
                   return Math.round(
                       value * getResources()
                       .getDisplayMetrics().density
@@ -235,6 +235,7 @@ jobs:
               }
 
               private void mount(View view) {
+
                   setContentView(view);
 
                   view.setOnApplyWindowInsetsListener((v, insets) -> {
@@ -270,20 +271,26 @@ jobs:
               private GradientDrawable background(
                   int color, int radius
               ) {
+
                   GradientDrawable d = new GradientDrawable();
+
                   d.setColor(color);
                   d.setCornerRadius(dp(radius));
+
                   return d;
               }
 
               private TextView text(
                   String value, int size, int color
               ) {
+
                   TextView t = new TextView(this);
+
                   t.setText(value);
                   t.setTextSize(size);
                   t.setTextColor(color);
                   t.setGravity(Gravity.CENTER);
+
                   return t;
               }
 
@@ -297,6 +304,7 @@ jobs:
                           web.getParent();
 
                       if (parent instanceof android.view.ViewGroup) {
+
                           ((android.view.ViewGroup) parent)
                               .removeView(web);
                       }
@@ -314,10 +322,12 @@ jobs:
                   destroyWeb();
 
                   ScrollView scroll = new ScrollView(this);
+
                   scroll.setFillViewport(true);
                   scroll.setBackgroundColor(BG);
 
                   LinearLayout root = new LinearLayout(this);
+
                   root.setOrientation(LinearLayout.VERTICAL);
                   root.setGravity(Gravity.CENTER);
 
@@ -350,6 +360,7 @@ jobs:
                   panel.addView(info);
 
                   ImageView logo = new ImageView(this);
+
                   logo.setImageResource(R.drawable.ic_lock);
 
                   info.addView(
@@ -384,6 +395,7 @@ jobs:
                   info.addView(dots);
 
                   message = text(" ", 15, Color.RED);
+
                   info.addView(message);
 
                   LinearLayout keyboard =
@@ -394,6 +406,7 @@ jobs:
                   );
 
                   keyboard.setGravity(Gravity.CENTER);
+
                   panel.addView(keyboard);
 
                   String[] keys = {
@@ -411,6 +424,7 @@ jobs:
                           new LinearLayout(this);
 
                       row.setGravity(Gravity.CENTER);
+
                       keyboard.addView(row);
 
                       for (int c = 0; c < 3; c++) {
@@ -477,7 +491,11 @@ jobs:
                       android.os.SystemClock.elapsedRealtime()
                       < blockedUntil
                   ) {
-                      message.setText("Подождите 30 секунд");
+
+                      message.setText(
+                          "Подождите 30 секунд"
+                      );
+
                       return;
                   }
 
@@ -509,7 +527,9 @@ jobs:
                       } else {
 
                           entered = "";
+
                           updateDots();
+
                           failures++;
 
                           if (failures >= 5) {
@@ -550,6 +570,7 @@ jobs:
                           host.equals(domain) ||
                           host.endsWith("." + domain)
                       ) {
+
                           return true;
                       }
                   }
@@ -561,18 +582,9 @@ jobs:
 
                   if (uri == null) return false;
 
-                  if (!"https".equalsIgnoreCase(uri.getScheme())) {
-                      return false;
-                  }
-
-                  String host = uri.getHost();
-
-                  if (host == null) return false;
-
-                  host = host.toLowerCase(Locale.ROOT);
-
-                  return host.equals("hochu.tv") ||
-                         host.endsWith(".hochu.tv");
+                  return "https".equalsIgnoreCase(
+                      uri.getScheme()
+                  ) && !isAdHost(uri);
               }
 
               private WebResourceResponse blockedResponse() {
@@ -670,8 +682,15 @@ jobs:
                   settings.setUseWideViewPort(true);
                   settings.setLoadWithOverviewMode(true);
 
-                  settings.setJavaScriptCanOpenWindowsAutomatically(false);
-                  settings.setSupportMultipleWindows(true);
+                  settings.setSupportMultipleWindows(false);
+
+                  settings.setJavaScriptCanOpenWindowsAutomatically(
+                      false
+                  );
+
+                  settings.setMediaPlaybackRequiresUserGesture(
+                      false
+                  );
 
                   settings.setMixedContentMode(
                       WebSettings.MIXED_CONTENT_NEVER_ALLOW
@@ -697,10 +716,13 @@ jobs:
                       ) {
 
                           if (!request.isForMainFrame()) {
+
                               return isAdHost(request.getUrl());
                           }
 
-                          return !allowedPage(request.getUrl());
+                          return !allowedPage(
+                              request.getUrl()
+                          );
                       }
 
                       @Override
@@ -719,6 +741,7 @@ jobs:
                       ) {
 
                           if (isAdHost(request.getUrl())) {
+
                               return blockedResponse();
                           }
 
@@ -734,6 +757,7 @@ jobs:
                       ) {
 
                           if (isAdHost(Uri.parse(url))) {
+
                               return blockedResponse();
                           }
 
@@ -749,6 +773,7 @@ jobs:
                       ) {
 
                           super.onPageCommitVisible(view, url);
+
                           hideAds(view);
                       }
 
@@ -759,6 +784,7 @@ jobs:
                       ) {
 
                           super.onPageFinished(view, url);
+
                           hideAds(view);
 
                           view.postDelayed(
@@ -783,21 +809,12 @@ jobs:
                       }
                   });
 
-                  web.setWebChromeClient(new WebChromeClient() {
-
-                      @Override
-                      public boolean onCreateWindow(
-                          WebView view,
-                          boolean isDialog,
-                          boolean isUserGesture,
-                          Message resultMsg
-                      ) {
-
-                          return false;
-                      }
-                  });
+                  web.setWebChromeClient(
+                      new WebChromeClient()
+                  );
 
                   mount(web);
+
                   web.loadUrl(SITE_URL);
               }
 
